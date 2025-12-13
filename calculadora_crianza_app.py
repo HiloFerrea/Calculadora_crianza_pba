@@ -336,11 +336,6 @@ Esta herramienta estima el costo mensual de la crianza de niñas, niños y adole
 La metodología utilizada valora tanto los <b>bienes y servicios</b> (ByS) necesarios para su desarrollo como el <b>tiempo de cuidado</b>,
 (TC) a partir de información proveniente de fuentes oficiales y de las remuneraciones vigentes del trabajo doméstico.
 
-El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala:
-el NNyA con mayor costo recibe un factor 1, y los siguientes factores de 0,7 y 0,5.
-Esta decisión responde a un criterio normativo que permite reconocer plenamente los gastos más significativos
-y asegurar una estimación proporcional de los costos restantes.
-
 Esta herramienta integra datos de:
 <ul>
 <li><b>INDEC - </b> Instituto Nacional de Estadística y Censos</li>
@@ -526,12 +521,18 @@ if st.session_state.calc_done:
         use_container_width=True
     )
 
-    st.caption(
-    "El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala: "
-    "el NNyA con mayor costo recibe un factor 1, y los restantes factores de 0,7 y 0,5. "
-    "Esta decisión responde a un criterio normativo que permite reconocer plenamente los gastos más significativos "
-    "y asegurar una estimación proporcional de los costos restantes."
+    st.markdown(
+        """
+        <p style="text-align: justify; font-size: 0.8rem; color: rgba(49, 51, 63, 0.6);">
+        El modelo estima el costo mensual diferenciado por edad y aplica factores de economía de escala.
+        El NNyA con mayor costo recibe un factor igual a 1, mientras que los restantes reciben factores de 0,7 y 0,5.
+        Este criterio normativo permite reconocer plenamente los gastos de mayor incidencia y asegurar
+        una estimación proporcional de los costos asociados al resto de los integrantes.
+    </p>
+    """,
+    unsafe_allow_html=True
 )
+
 
     
     st.subheader("Comparación con INDEC")
