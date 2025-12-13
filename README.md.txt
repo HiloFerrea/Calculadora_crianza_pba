@@ -2,6 +2,8 @@
 
 Herramienta interactiva para la estimación del costo mensual de la crianza de niñas, niños y adolescentes (NNyA) en la Provincia de Buenos Aires.
 
+Esta herramienta constituye un desarrollo técnico de carácter exploratorio y no representa una publicación oficial del INDEC ni de la DPE. Los cálculos se basan en información pública y criterios metodológicos propios.
+
 La metodología integra la valorización de los **bienes y servicios** necesarios para el desarrollo de NNyA y el **tiempo de cuidado**, aplicando criterios de **economía de escala** según la composición del hogar.
 
 El cálculo se basa en información proveniente de **fuentes oficiales**, tales como:
@@ -34,8 +36,6 @@ La aplicación permite, de manera **opcional**, realizar una comparación con la
 - **UPACP**
   - Escala salarial de trabajo en casas particulares
 
----
-
 ## Metodología
 
 La estimación se apoya en información proveniente de la ENGHo, la ENUT y documentos metodológicos oficiales, combinando criterios normativos y estadísticos para la valorización del cuidado y el consumo.
@@ -52,6 +52,16 @@ La estimación se apoya en información proveniente de la ENGHo, la ENUT y docum
 
 ---
 
+## Ejecución de la aplicación
+
+Para ejecutar la aplicación localmente:
+
+```bash
+pip install -r requirements.txt
+streamlit run calculadora_crianza_app.py
+
+
+```
 ## Autor
 
 **Hilario Ferrea**  
