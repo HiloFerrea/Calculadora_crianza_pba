@@ -551,14 +551,7 @@ if st.session_state.calc_done:
         """,
         unsafe_allow_html=True
         )
-        
-        st.caption(
-            f"El Instituto Nacional de Estadística y Censos (INDEC) difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023)." )
-        st.caption(
-            f"Con el fin de contextualizar los resultados y aportar una perspectiva más amplia, se incluyen a continuación las estimaciones de los cotos a partir de esta metodología.")
-        st.caption(
-            f"Ambos enfoques permiten contrastar supuestos y criterios, enriqueciendo el análisis y favoreciendo comparaciones." )
-
+                    
         st.markdown(
             f"""
             <p style='text-align: justify;'>
