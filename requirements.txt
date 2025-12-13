@@ -3,3 +3,4 @@ pandas
 requests
 beautifulsoup4
 openpyxl
+xlrd==2.0.1
