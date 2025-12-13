@@ -527,10 +527,12 @@ if st.session_state.calc_done:
     )
 
     st.caption(
-            f"El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala:
-el NNyA con mayor costo recibe un factor 1, y los siguientes factores de 0,7 y 0,5.
-Esta decisión responde a un criterio normativo que permite reconocer plenamente los gastos más significativos
-y asegurar una estimación proporcional de los costos restantes." )
+    "El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala: "
+    "el NNyA con mayor costo recibe un factor 1, y los restantes factores de 0,7 y 0,5. "
+    "Esta decisión responde a un criterio normativo que permite reconocer plenamente los gastos más significativos "
+    "y asegurar una estimación proporcional de los costos restantes."
+)
+
     
     st.subheader("Comparación con INDEC")
 
