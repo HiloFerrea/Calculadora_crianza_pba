@@ -541,6 +541,18 @@ if st.session_state.calc_done:
         st.info("No hay tramos para mostrar según las edades ingresadas.")
     else:
 
+        st.markdown(
+            """
+            <p style="text-align: justify; font-size: 0.8rem; color: rgba(49, 51, 63, 0.6);">
+            El Instituto Nacional de Estadística y Censos (INDEC) difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023).
+            El NNyA con mayor costo recibe un factor igual a 1, mientras que los restantes reciben factores de 0,7 y 0,5.
+            Este criterio normativo permite reconocer plenamente los gastos de mayor incidencia y asegurar
+            una estimación proporcional de los costos asociados al resto de los integrantes.
+        </p>
+        """,
+        unsafe_allow_html=True
+        )
+        
         st.caption(
             f"El Instituto Nacional de Estadística y Censos (INDEC) difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023)." )
         st.caption(
