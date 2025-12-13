@@ -527,7 +527,10 @@ if st.session_state.calc_done:
     )
 
     st.caption(
-            f"El Instituto Nacional de Estadística y Censos (INDEC) difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023)." )
+            f"El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala:
+el NNyA con mayor costo recibe un factor 1, y los siguientes factores de 0,7 y 0,5.
+Esta decisión responde a un criterio normativo que permite reconocer plenamente los gastos más significativos
+y asegurar una estimación proporcional de los costos restantes." )
     
     st.subheader("Comparación con INDEC")
 
