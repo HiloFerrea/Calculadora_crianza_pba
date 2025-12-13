@@ -333,8 +333,8 @@ st.markdown("""
 texto_introduccion = """
 <div style='text-align: justify'>
 Esta herramienta estima el costo mensual de la crianza de niñas, niños y adolescentes (NNyA) en la provincia de Buenos Aires.
-La metodología utilizada valora tanto los <b>bienes y servicios</b> (ByS)necesarios para su desarrollo como el <b>tiempo de cuidado</b>,
-(TC)a partir de información proveniente de la ENGHo, la ENUT y fuentes oficiales como la CBA y las remuneraciones del trabajo doméstico.
+La metodología utilizada valora tanto los <b>bienes y servicios</b> (ByS) necesarios para su desarrollo como el <b>tiempo de cuidado</b>,
+(TC) a partir de información proveniente de fuentes oficiales y de las remuneraciones vigentes del trabajo doméstico.
 
 El modelo calcula el costo diferenciado por edad y aplica factores de economía de escala:
 el NNyA con mayor costo recibe un factor 1, y los siguientes factores de 0,7 y 0,5.
