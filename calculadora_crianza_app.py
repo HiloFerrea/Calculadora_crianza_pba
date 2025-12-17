@@ -4,6 +4,8 @@ from io import BytesIO
 import re
 from bs4 import BeautifulSoup
 import streamlit as st
+from datetime import datetime
+
 
 
 def formato_ar(numero):
@@ -15,10 +17,33 @@ def formato_ar(numero):
     return f"{numero:,.0f}".replace(",", "@").replace(".", ",").replace("@", ".")
 
 
+def get_remote_version(url: str, timeout: int = 30) -> dict:
+    """
+    Obtiene señales de versión del archivo remoto (si el servidor las expone).
+    """
+    try:
+        r = requests.head(url, timeout=timeout, allow_redirects=True)
+        return {
+            "status": r.status_code,
+            "etag": r.headers.get("ETag"),
+            "last_modified": r.headers.get("Last-Modified"),
+            "content_length": r.headers.get("Content-Length"),
+        }
+    except Exception as e:
+        return {
+            "status": None,
+            "etag": None,
+            "last_modified": None,
+            "content_length": None,
+            "error": str(e),
+        }
+
+
+
 # ------------------------------------------------------------
 # 1. DATOS INDEC – CBA GBA
 # ------------------------------------------------------------
-@st.cache_data
+@st.cache_data(ttl=6*60*60)  # 6 horas
 def obtener_cba_gba_indec():
     url = "https://www.indec.gob.ar/ftp/cuadros/sociedad/serie_cba_cbt.xls"
     resp = requests.get(url)
@@ -40,7 +65,7 @@ def obtener_cba_gba_indec():
 # 1.1 DATOS INDEC – CANASTA DE CRIANZA (ByS / TC / Total)
 # ------------------------------------------------------------
 
-@st.cache_data
+@st.cache_data(ttl=6*60*60)  # 6 horas
 def obtener_canasta_crianza_indec():
     url = "https://www.indec.gob.ar/ftp/cuadros/sociedad/serie_canasta_crianza.xlsx"
     resp = requests.get(url, timeout=30)
@@ -183,11 +208,12 @@ def obtener_canasta_crianza_indec():
 # ------------------------------------------------------------
 # 2. DATOS UPACP – 4° CATEGORÍA CON RETIRO
 # ------------------------------------------------------------
+
 def parse_monto(s):
     return float(s.replace(".", "").replace(",", "."))
 
 
-@st.cache_data
+@st.cache_data(ttl=6*60*60)  # 6 horas
 def obtener_upacp():
     url = "https://upacp.org.ar/?page_id=26745"
     resp = requests.get(url)
@@ -358,6 +384,9 @@ for i in range(n):
 
 clicked = st.button("Calcular")
 
+URL_INDEC_CRIANZA = "https://www.indec.gob.ar/ftp/cuadros/sociedad/serie_canasta_crianza.xlsx"
+URL_INDEC_CBA = "https://www.indec.gob.ar/ftp/cuadros/sociedad/serie_cba_cbt.xls"
+
 if clicked:
     if n == 0:
         st.warning("Ingresá al menos un niño/a.")
@@ -371,6 +400,13 @@ if clicked:
 
         # comparación INDEC: calcular 1 vez y guardar también
         indec = obtener_canasta_crianza_indec()
+
+        # ---- NUEVO: trazabilidad de actualización (timestamp + versión remota)
+        ts_descarga = datetime.now()
+        v_crianza = get_remote_version(URL_INDEC_CRIANZA)
+        v_cba = get_remote_version(URL_INDEC_CBA)
+
+        
         costos_pba = costos_individuales_por_grupo(cba_gba, valor_hora, salario_mensual)
 
         # detectar tramos (1 vez)
@@ -424,6 +460,11 @@ if clicked:
             "detalle": detalle,
             "indec": indec,
             "base": base,
+
+            # ---- NUEVO: trazabilidad de actualización
+            "ts_descarga": ts_descarga,
+            "v_crianza": v_crianza,
+            "v_cba": v_cba,
         }
 
 # ------------------------------------------------------------
@@ -431,6 +472,14 @@ if clicked:
 # ------------------------------------------------------------
 if st.session_state.calc_done:
     r = st.session_state.result
+
+    ts = r.get("ts_descarga")
+    v_crianza = r.get("v_crianza", {}) or {}
+    v_cba = r.get("v_cba", {}) or {}
+
+    def fmt_none(x):
+        return x if x else "—"
+
 
     fecha_cba = r["fecha_cba"]
     cba_gba = r["cba_gba"]
@@ -441,6 +490,7 @@ if st.session_state.calc_done:
     indec = r["indec"]
     base = r["base"]
 
+       
     st.markdown("<h2 style='text-align: center;'>Datos utilizados</h2>", unsafe_allow_html=True)
 
     valor_hora_24_mas = round(salario_mensual / (6 * 30.5))
@@ -463,13 +513,37 @@ if st.session_state.calc_done:
     st.markdown(f"""
     <div class="box">
     <h4 style="text-align:center;">INDEC</h4>
-    <b>Canasta Básica Alimentaria (CBA) de la región GBA</b><br>
-    <small><i>Descarga completa</i></small><br>
+
+    <b>Canasta Básica Alimentaria (CBA)</b><br>
+     
     <b>Región:</b> Gran Buenos Aires (GBA) <br>
     <b>Último período disponible:</b> {fecha_cba.strftime('%Y-%m')} <br>
-    <b>CBA adulto equivalente:</b> ${formato_ar(cba_gba)}
+    <b>CBA adulto equivalente:</b> ${formato_ar(cba_gba)}<br><br>
+
+    <b>Canasta de crianza</b><br>
+    
+    <b>Último período disponible:</b> {pd.to_datetime(indec['Fecha']).strftime('%Y-%m')}<br><br>
+
+    <small>
+    <b>Actualizado en la app:</b> {ts.strftime('%Y-%m-%d %H:%M:%S') if ts else "—"}<br>
+    <b>INDEC CBA – Last-Modified:</b> {fmt_none(v_cba.get("last_modified"))}<br>
+    <b>INDEC Crianza – Last-Modified:</b> {fmt_none(v_crianza.get("last_modified"))}<br>
+    </small>
     </div>
     """, unsafe_allow_html=True)
+
+    try:
+        ultimo_indec = pd.to_datetime(indec["Fecha"])
+        hoy = pd.Timestamp.today().normalize()
+        # si la serie viene con rezago, esto igual te avisa si es muy grande (ej. > 60 días)
+        if (hoy - ultimo_indec).days > 60:
+            st.warning(
+                f"Atención: la canasta de crianza INDEC disponible en el archivo descargado es {ultimo_indec.strftime('%Y-%m')}."
+            )
+    except Exception:
+        pass
+
+
 
     st.markdown(f"""
     <div class="box">
@@ -553,15 +627,17 @@ if st.session_state.calc_done:
         )
                     
         st.markdown(
-            f"""
+            """
+            <small>
             <p style='text-align: justify;'>
-                <b><small>Nota:</b> último período disponible {pd.to_datetime(indec['Fecha']).strftime('%Y-%m')}. 
-                Se muestran únicamente los tramos presentes en las edades ingresadas. 
+                <b>Nota:</b>
+                Se muestran únicamente los tramos presentes en las edades ingresadas.
                 Para 6–12 (INDEC) se contrasta con 6–11 (PBA).
-        </p>
-        """,
-        unsafe_allow_html=True
+            </p>
+            """,
+            unsafe_allow_html=True
         )
+
 
       
         def tabla_corta(df, col_indec, col_pba, titulo):
@@ -591,7 +667,9 @@ if st.session_state.calc_done:
             tabla_corta(base, "INDEC_ByS", "PBA_ByS", "Canasta de Bienes y Servicios (ByS)")
             tabla_corta(base, "INDEC_TC", "PBA_TC", "Canasta de Tiempo de Cuidado (TC)")
 
-        # ------------------------------------------------------------
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+
+                # ------------------------------------------------------------
         # MATERIALES DE REFERENCIA (AHORA: SOLO DESPUÉS DEL CÁLCULO)
         # ------------------------------------------------------------
         st.write("### Materiales de referencia")
