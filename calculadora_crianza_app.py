@@ -5,6 +5,8 @@ import re
 from bs4 import BeautifulSoup
 import streamlit as st
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 
 
 
@@ -402,7 +404,7 @@ if clicked:
         indec = obtener_canasta_crianza_indec()
 
         # ---- NUEVO: trazabilidad de actualización (timestamp + versión remota)
-        ts_descarga = datetime.now()
+        ts_descarga = datetime.now(ZoneInfo("America/Argentina/Buenos_Aires"))
         v_crianza = get_remote_version(URL_INDEC_CRIANZA)
         v_cba = get_remote_version(URL_INDEC_CBA)
 
