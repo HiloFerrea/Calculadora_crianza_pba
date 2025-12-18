@@ -1,3 +1,30 @@
+"""
+Calculadora del costo de la crianza – Provincia de Buenos Aires
+
+Autor: Hilario Ferrea
+Afiliación: Dirección Provincial de Estadística –
+Ministerio de Economía de la Provincia de Buenos Aires
+
+Contacto:
+- hferrea@estadistica.ec.gba.gov.ar
+- hiloferrea@gmail.com
+
+Nota:
+Este código constituye un desarrollo técnico de carácter exploratorio.
+No representa una publicación oficial del INDEC ni de la DPE.
+"""
+
+import requests
+import pandas as pd
+from io import BytesIO
+import re
+from bs4 import BeautifulSoup
+import streamlit as st
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
+
 import requests
 import pandas as pd
 from io import BytesIO
