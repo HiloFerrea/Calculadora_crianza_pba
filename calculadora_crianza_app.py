@@ -6,8 +6,16 @@ from bs4 import BeautifulSoup
 import streamlit as st
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from email.utils import parsedate_to_datetime
 
-
+def fmt_http_datetime(s):
+    if not s:
+        return "—"
+    try:
+        dt = parsedate_to_datetime(s)
+        return dt.strftime("%d %b %Y %H:%M:%S GMT")
+    except Exception:
+        return s
 
 
 def formato_ar(numero):
@@ -207,9 +215,9 @@ def obtener_canasta_crianza_indec():
         },
     }
 
-# ------------------------------------------------------------
+# ------------------------------------------
 # 2. DATOS UPACP – 4° CATEGORÍA CON RETIRO
-# ------------------------------------------------------------
+# ------------------------------------------
 
 def parse_monto(s):
     return float(s.replace(".", "").replace(",", "."))
@@ -234,9 +242,9 @@ def obtener_upacp():
     return valor_hora, mensual
 
 
-# ------------------------------------------------------------
-# 3. METODOLOGÍA DE CRIANZA
-# ------------------------------------------------------------
+# --------------------------------
+# 3. METODOLOGÍA DE CRIANZA - PBA
+# --------------------------------
 escala_bienes = {
     "menor1": 0.298,
     "1-3": 0.298,
@@ -348,9 +356,9 @@ if "calc_done" not in st.session_state:
 
 
 
-# ------------------------------------------------------------
+# -----------------------
 # 4. INTERFAZ STREAMLIT
-# ------------------------------------------------------------
+# -----------------------
 
 st.markdown("""
 <h1 style='text-align: center;'>Calculadora del costo de la crianza</h1>
@@ -469,9 +477,9 @@ if clicked:
             "v_cba": v_cba,
         }
 
-# ------------------------------------------------------------
-# MOSTRAR RESULTADOS (NO RECALCULA)
-# ------------------------------------------------------------
+# -------------------
+# MOSTRAR RESULTADOS
+# -------------------
 if st.session_state.calc_done:
     r = st.session_state.result
 
@@ -528,8 +536,8 @@ if st.session_state.calc_done:
 
     <small>
     <b>Actualizado en la app:</b> {ts.strftime('%Y-%m-%d %H:%M:%S') if ts else "—"}<br>
-    <b>INDEC CBA – Última modificación:</b> {fmt_none(v_cba.get("last_modified"))}<br>
-    <b>INDEC Crianza – Última modificación:</b> {fmt_none(v_crianza.get("last_modified"))}<br>
+    <b>INDEC CBA – Última modificación:</b> {fmt_http_datetime(v_cba.get("last_modified"))}<br>
+    <b>INDEC Crianza – Última modificación:</b> {fmt_http_datetime(v_crianza.get("last_modified"))}<br>
     </small>
     </div>
     """, unsafe_allow_html=True)
@@ -620,7 +628,7 @@ if st.session_state.calc_done:
         st.markdown(
             """
             <p style="text-align: justify; font-size: 0.8rem; color: rgba(49, 51, 63, 0.6);">
-            El Instituto Nacional de Estadística y Censos (INDEC) difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023).
+            El INDEC difunde mensualmente la valorización de la canasta de crianza para la primera infancia, la niñez y la adolescencia, elaborada a partir de los lineamientos metodológicos desarrollados por la Dirección Nacional de Economía, Igualdad y Género del Ministerio de Economía y UNICEF (2023).
             Con el fin de contextualizar los resultados y aportar una perspectiva más amplia, se incluyen a continuación las estimaciones de los cotos a partir de esta metodología.
             Ambos enfoques permiten contrastar supuestos y criterios, enriqueciendo el análisis y favoreciendo comparaciones.
         </p>
@@ -671,9 +679,9 @@ if st.session_state.calc_done:
 
         st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
-                # ------------------------------------------------------------
-        # MATERIALES DE REFERENCIA (AHORA: SOLO DESPUÉS DEL CÁLCULO)
-        # ------------------------------------------------------------
+        #-----------------------------------------------
+        # MATERIALES DE REFERENCIA (DESPUÉS DEL CÁLCULO)
+        # ----------------------------------------------
         st.write("### Materiales de referencia")
 
         st.markdown(
