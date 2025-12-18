@@ -528,8 +528,8 @@ if st.session_state.calc_done:
 
     <small>
     <b>Actualizado en la app:</b> {ts.strftime('%Y-%m-%d %H:%M:%S') if ts else "—"}<br>
-    <b>INDEC CBA – Last-Modified:</b> {fmt_none(v_cba.get("last_modified"))}<br>
-    <b>INDEC Crianza – Last-Modified:</b> {fmt_none(v_crianza.get("last_modified"))}<br>
+    <b>INDEC CBA – Última modificación:</b> {fmt_none(v_cba.get("last_modified"))}<br>
+    <b>INDEC Crianza – Última modificación:</b> {fmt_none(v_crianza.get("last_modified"))}<br>
     </small>
     </div>
     """, unsafe_allow_html=True)
