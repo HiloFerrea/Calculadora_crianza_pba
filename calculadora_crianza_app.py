@@ -1,19 +1,3 @@
-"""
-Calculadora del costo de la crianza – Provincia de Buenos Aires
-
-Autor: Hilario Ferrea
-Afiliación: Dirección Provincial de Estadística –
-Ministerio de Economía de la Provincia de Buenos Aires
-
-Contacto:
-- hferrea@estadistica.ec.gba.gov.ar
-- hiloferrea@gmail.com
-
-Nota:
-Este código constituye un desarrollo técnico de carácter exploratorio.
-No representa una publicación oficial del INDEC ni de la DPE.
-"""
-
 import requests
 import pandas as pd
 from io import BytesIO
@@ -108,17 +92,26 @@ def obtener_canasta_crianza_indec():
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
 
-    # Leer con encabezados multinivel
-    df = pd.read_excel(BytesIO(resp.content), sheet_name=0, header=[3, 4])
+    # El archivo del INDEC tiene encabezado multinivel real en 4 filas:
+    # fila 3: Año / Mes / título general
+    # fila 4: tramos de edad
+    # fila 5: Bienes y servicios
+    # fila 6: Cuidado / Total
+    df = pd.read_excel(BytesIO(resp.content), sheet_name=0, header=[2, 3, 4, 5])
 
     # --- Aplanar nombres de columnas
     def col_to_str(col):
         if isinstance(col, tuple):
-            partes = [
-                str(x).strip()
-                for x in col
-                if str(x).strip().lower() not in ("nan", "none")
-            ]
+            partes = []
+            for x in col:
+                s = str(x).strip()
+                if not s:
+                    continue
+                if s.lower() in ("nan", "none"):
+                    continue
+                if s.lower().startswith("unnamed"):
+                    continue
+                partes.append(s)
             return " | ".join(partes)
         return str(col).strip()
 
@@ -139,20 +132,20 @@ def obtener_canasta_crianza_indec():
 
     # ------------------------------------------------------------
     # BUSCAR COLUMNAS ByS / TC / Total por grupo etario
-    # (en el Excel los encabezados son: Bienes y servicios | Cuidado | Total)
+    # usando etiquetas exactas del archivo del INDEC
     # ------------------------------------------------------------
     grupos = {
-        "menor1": ["menor"],
-        "1-3": ["1", "3"],
-        "4-5": ["4", "5"],
-        "6-12": ["6", "12"],
+        "menor1": ["menor de 1 año"],
+        "1-3": ["1 a 3 años"],
+        "4-5": ["4 a 5 años"],
+        "6-12": ["6 a 12 años"],
     }
 
     cols = {}
     for g, tok in grupos.items():
         cols[g] = {
-            "ByS": find_col(tok + ["bienes"]),   # bienes y servicios
-            "TC":  find_col(tok + ["cuidado"]),  # cuidado
+            "ByS": find_col(tok + ["bienes y servicios"]),
+            "TC":  find_col(tok + ["cuidado"]),
             "Total": find_col(tok + ["total"]),
         }
 
