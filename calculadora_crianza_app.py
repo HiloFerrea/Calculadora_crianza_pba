@@ -92,11 +92,7 @@ def obtener_canasta_crianza_indec():
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
 
-    # El archivo del INDEC tiene encabezado multinivel real en 4 filas:
-    # fila 3: Año / Mes / título general
-    # fila 4: tramos de edad
-    # fila 5: Bienes y servicios
-    # fila 6: Cuidado / Total
+    # Leer con encabezados multinivel reales del archivo
     df = pd.read_excel(BytesIO(resp.content), sheet_name=0, header=[2, 3, 4, 5])
 
     # --- Aplanar nombres de columnas
@@ -105,11 +101,11 @@ def obtener_canasta_crianza_indec():
             partes = []
             for x in col:
                 s = str(x).strip()
-                if not s:
-                    continue
                 if s.lower() in ("nan", "none"):
                     continue
                 if s.lower().startswith("unnamed"):
+                    continue
+                if s == "":
                     continue
                 partes.append(s)
             return " | ".join(partes)
@@ -122,31 +118,44 @@ def obtener_canasta_crianza_indec():
     col_mes = df.columns[1]
     df = df.rename(columns={col_anio: "Año", col_mes: "Mes"})
 
-    # --- Helper para encontrar columnas por contenido
-    def find_col(contains_all):
+    # --- Helper para encontrar columnas por grupo y tipo exacto
+    def find_col(grupo_texto, tipo):
         for c in df.columns:
-            s = c.lower()
-            if all(token.lower() in s for token in contains_all):
+            s = c.lower().strip()
+
+            if grupo_texto.lower() not in s:
+                continue
+
+            # ByS: debe terminar exactamente en "bienes y servicios"
+            if tipo == "ByS" and s.endswith("bienes y servicios"):
                 return c
-        raise KeyError(f"No se encontró columna que contenga: {contains_all}")
+
+            # TC: debe terminar exactamente en "cuidado"
+            if tipo == "TC" and s.endswith("cuidado"):
+                return c
+
+            # Total: debe terminar exactamente en "total"
+            if tipo == "Total" and s.endswith("total"):
+                return c
+
+        raise KeyError(f"No se encontró columna para grupo='{grupo_texto}' y tipo='{tipo}'")
 
     # ------------------------------------------------------------
     # BUSCAR COLUMNAS ByS / TC / Total por grupo etario
-    # usando etiquetas exactas del archivo del INDEC
     # ------------------------------------------------------------
     grupos = {
-        "menor1": ["menor de 1 año"],
-        "1-3": ["1 a 3 años"],
-        "4-5": ["4 a 5 años"],
-        "6-12": ["6 a 12 años"],
+        "menor1": "menor de 1 año",
+        "1-3": "1 a 3 años",
+        "4-5": "4 a 5 años",
+        "6-12": "6 a 12 años",
     }
 
     cols = {}
-    for g, tok in grupos.items():
+    for g, grupo_txt in grupos.items():
         cols[g] = {
-            "ByS": find_col(tok + ["bienes y servicios"]),
-            "TC":  find_col(tok + ["cuidado"]),
-            "Total": find_col(tok + ["total"]),
+            "ByS": find_col(grupo_txt, "ByS"),
+            "TC": find_col(grupo_txt, "TC"),
+            "Total": find_col(grupo_txt, "Total"),
         }
 
     # Quedarnos con lo esencial (Año, Mes + columnas encontradas)
@@ -565,7 +574,6 @@ if st.session_state.calc_done:
     try:
         ultimo_indec = pd.to_datetime(indec["Fecha"])
         hoy = pd.Timestamp.today().normalize()
-        # si la serie viene con rezago, esto igual te avisa si es muy grande (ej. > 60 días)
         if (hoy - ultimo_indec).days > 60:
             st.warning(
                 f"Atención: la canasta de crianza INDEC disponible en el archivo descargado es {ultimo_indec.strftime('%Y-%m')}."
